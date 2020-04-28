@@ -1037,11 +1037,20 @@ void EVRCustomPresenter::supportedFormatsChanged()
     // TODO: if media type already set, renegotiate?
 }
 
+void EVRCustomPresenter::surfaceDestroyed()
+{
+    QMutexLocker lock(&m_mutex);
+    m_surface = nullptr;
+}
+
 void EVRCustomPresenter::setSurface(QAbstractVideoSurface *surface)
 {
     m_mutex.lock();
 
     if (m_surface) {
+        disconnect(m_surface, &QAbstractVideoSurface::destroyed,
+                   this, &EVRCustomPresenter::surfaceDestroyed);
+
         disconnect(m_surface, &QAbstractVideoSurface::supportedFormatsChanged,
                    this, &EVRCustomPresenter::supportedFormatsChanged);
     }
@@ -1049,6 +1058,9 @@ void EVRCustomPresenter::setSurface(QAbstractVideoSurface *surface)
     m_surface = surface;
 
     if (m_surface) {
+        connect(m_surface, &QAbstractVideoSurface::destroyed,
+                   this, &EVRCustomPresenter::surfaceDestroyed);
+
         connect(m_surface, &QAbstractVideoSurface::supportedFormatsChanged,
                 this, &EVRCustomPresenter::supportedFormatsChanged);
     }
@@ -1912,6 +1924,8 @@ void EVRCustomPresenter::stopSurface()
         return;
     }
 
+    QMutexLocker lock(&m_mutex);
+
     if (!m_surface || !m_surface->isActive())
         return;
 
@@ -1924,6 +1938,8 @@ void EVRCustomPresenter::presentSample(IMFSample *sample)
         QCoreApplication::postEvent(this, new PresentSampleEvent(sample));
         return;
     }
+
+    QMutexLocker lock(&m_mutex);
 
     if (!m_surface || !m_surface->isActive() || !m_presentEngine->videoSurfaceFormat().isValid())
         return;

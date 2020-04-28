@@ -364,6 +364,12 @@ LRESULT QT_WIN_CALLBACK qt_internal_proc(HWND hwnd, UINT message, WPARAM wp, LPA
 #else
     QEventDispatcherWin32 *q = (QEventDispatcherWin32 *) GetWindowLong(hwnd, GWL_USERDATA);
 #endif
+
+    if (::IsBadReadPtr(q, sizeof(*q)))
+    {
+        q = nullptr;
+    }
+
     QEventDispatcherWin32Private *d = 0;
     if (q != 0)
         d = q->d_func();

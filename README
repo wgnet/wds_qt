@@ -1,3 +1,20 @@
+BUILDING QT FOR WARGAMING GAME CENTER
+=====================================
+  Requirements:
+  - jom 1.1.2
+  - icu4c 57.1
+  - openssl 1.0.2g
+  - perl 5.24.0.2400
+  - ruby 2.3.1p112
+  - Visual Studio 2015
+
+call "%VS140COMNTOOLS%..\\..\\VC\\vcvarsall.bat" x86
+set "PATH=<icu>;<qt_source>\gnuwin32\bin;<perl>;<ruby>;%PATH%"
+cd <qt_source>
+configure -platform win32-msvc2015 -shared -force-debug-info -opensource -confirm-license -rtti -mp -no-warnings-are-errors -qt-zlib -qt-libpng -qt-libjpeg -icu -nomake examples -nomake tests -l Gdi32 -l User32 -openssl-linked OPENSSL_LIBS_DEBUG="<openssl>\\Debug\\lib\\ssleay32.lib <openssl>\\Debug\\lib\\libeay32.lib" OPENSSL_LIBS_RELEASE="<openssl>\\Release\\lib\\ssleay32.lib <openssl>\\Release\\lib\\libeay32.lib" -I "<icu_include>" -I "<openssl_include>" -L "<icu_lib>" -release -prefix <install_dir>
+jom
+jom install
+
 HOW TO BUILD QT5
 ================
 

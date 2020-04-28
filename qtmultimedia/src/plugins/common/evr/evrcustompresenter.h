@@ -248,6 +248,7 @@ public:
     STDMETHODIMP ReleaseServicePointers();
 
     void supportedFormatsChanged();
+    void surfaceDestroyed();
     void setSurface(QAbstractVideoSurface *surface);
 
     void startSurface();
