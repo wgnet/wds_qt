@@ -118,7 +118,7 @@ void QNetworkSessionPrivateImpl::syncStateWithInterface()
 
 void QNetworkSessionPrivateImpl::open()
 {
-    if (serviceConfig.isValid()) {
+    if (!engine || serviceConfig.isValid()) {
         lastError = QNetworkSession::OperationNotSupportedError;
         emit QNetworkSessionPrivate::error(lastError);
     } else if (!isOpen) {

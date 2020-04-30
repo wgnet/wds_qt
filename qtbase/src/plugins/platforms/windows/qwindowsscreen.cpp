@@ -487,6 +487,7 @@ static void moveToVirtualScreen(QWindow *w, const QScreen *newScreen)
 void QWindowsScreenManager::removeScreen(int index)
 {
     qCDebug(lcQpaWindows) << "Removing Monitor:" << m_screens.at(index)->data();
+    QWindowsScreen *winscreen = m_screens.at(index);
     QScreen *screen = m_screens.at(index)->screen();
     QScreen *primaryScreen = QGuiApplication::primaryScreen();
     // QTBUG-38650: When a screen is disconnected, Windows will automatically
@@ -512,6 +513,13 @@ void QWindowsScreenManager::removeScreen(int index)
         if (movedWindowCount)
             QWindowSystemInterface::flushWindowSystemEvents();
     }
+
+    // WGC-7935, assume removeScreen may cause recursive event processing (e.g. by calling flushWindowSystemEvents)
+    // and thus cuase unexpected change of m_screens container
+    index = m_screens.indexOf(winscreen);
+    if (index == -1)
+        return;
+    
     QWindowsIntegration::instance()->emitDestroyScreen(m_screens.takeAt(index));
 }
 
@@ -543,6 +551,12 @@ bool QWindowsScreenManager::handleScreenChanges()
         for (int i = m_screens.size() - 1; i >= 0; --i) {
             if (indexOfMonitor(newDataList, m_screens.at(i)->data().name) == -1)
                 removeScreen(i);
+
+            // WGC-7935, assume removeScreen may cause recursive event processing
+            // and unexpected change of m_screens container
+            if (i > m_screens.size())
+                i = m_screens.size();
+			
         }     // for existing screens
     }     // not lock screen
     return true;
